@@ -210,7 +210,7 @@ async function processPhoto(photo, dimensions, watermark, position) {
   const image = await loadImage(photo.url);
   const maxWidth = dimensions?.width ?? image.naturalWidth;
   const maxHeight = dimensions?.height ?? image.naturalHeight;
-  const scale = Math.min(1, maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+  const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
   const width = Math.max(1, Math.round(image.naturalWidth * scale));
   const height = Math.max(1, Math.round(image.naturalHeight * scale));
   const canvas = document.createElement("canvas");
