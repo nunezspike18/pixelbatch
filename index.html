@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Resize a batch of photos and add a text watermark right in your browser."
+    />
+    <title>PixelBatch — Batch photo toolkit</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="PixelBatch home">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <span>pixel<span class="brand-light">batch</span></span>
+      </a>
+      <span class="privacy-note"><span class="privacy-dot"></span> Your photos stay on your device</span>
+    </header>
+
+    <main>
+      <section class="intro">
+        <p class="eyebrow">YOUR PHOTOS, READY TO GO</p>
+        <h1>Small edits.<br /><span>Big batches.</span></h1>
+        <p class="intro-copy">
+          Resize a whole folder of photos and give them a consistent watermark.
+          Simple, quick, and private.
+        </p>
+      </section>
+
+      <section class="workspace" aria-label="Photo batch editor">
+        <div class="editor-column">
+          <div class="section-heading">
+            <div>
+              <span class="step-number">01</span>
+              <h2>Add your photos</h2>
+            </div>
+            <span class="file-count" id="file-count">No photos yet</span>
+          </div>
+
+          <label class="dropzone" id="dropzone" for="photo-input">
+            <input id="photo-input" type="file" accept="image/*" multiple />
+            <span class="upload-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v4A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-4" />
+              </svg>
+            </span>
+            <strong>Drop your photos here</strong>
+            <span class="dropzone-subtitle">or <span class="browse-link">browse files</span> on your device</span>
+            <span class="file-hint">JPG, PNG, WebP · Select multiple files at once</span>
+          </label>
+
+          <div class="photo-list-wrap">
+            <div class="photo-list-heading">
+              <span>PHOTO QUEUE</span>
+              <button class="text-button" id="clear-button" type="button" disabled>Clear all</button>
+            </div>
+            <div class="photo-list" id="photo-list" aria-live="polite">
+              <div class="empty-state" id="empty-state">
+                <span class="empty-icon" aria-hidden="true">▧</span>
+                <span>Your selected photos will show up here.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="settings-card">
+          <div class="section-heading settings-heading">
+            <div>
+              <span class="step-number">02</span>
+              <h2>Make it yours</h2>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label class="field-label" for="size-preset">RESIZE PHOTOS</label>
+            <select id="size-preset">
+              <option value="original">Keep original size</option>
+              <option value="1920">Large · Fit within 1920 px</option>
+              <option value="1280" selected>Medium · Fit within 1280 px</option>
+              <option value="800">Small · Fit within 800 px</option>
+              <option value="custom">Custom dimensions</option>
+            </select>
+            <div class="custom-size" id="custom-size" hidden>
+              <label>
+                <span class="sr-only">Maximum width in pixels</span>
+                <input id="custom-width" type="number" min="1" max="12000" value="1280" inputmode="numeric" />
+                <span>W px</span>
+              </label>
+              <span class="dimension-x" aria-hidden="true">×</span>
+              <label>
+                <span class="sr-only">Maximum height in pixels</span>
+                <input id="custom-height" type="number" min="1" max="12000" value="1280" inputmode="numeric" />
+                <span>H px</span>
+              </label>
+            </div>
+            <p class="field-help">Photos keep their proportions and won’t be enlarged.</p>
+          </div>
+
+          <div class="form-section">
+            <label class="field-label" for="watermark-text">TEXT WATERMARK</label>
+            <input id="watermark-text" type="text" maxlength="80" placeholder="e.g. © Your Name" />
+            <div class="watermark-options">
+              <label class="field-label small-label" for="watermark-position">POSITION</label>
+              <select id="watermark-position">
+                <option value="bottom-right">Bottom right</option>
+                <option value="bottom-left">Bottom left</option>
+                <option value="top-right">Top right</option>
+                <option value="top-left">Top left</option>
+                <option value="center">Center</option>
+              </select>
+            </div>
+            <p class="field-help">Leave blank if you don’t want a watermark.</p>
+          </div>
+
+          <div class="output-note">
+            <span class="output-icon" aria-hidden="true">↗</span>
+            <p><strong>Private by design</strong><br />Photos are processed in your browser, not uploaded.</p>
+          </div>
+
+          <button class="process-button" id="process-button" type="button" disabled>
+            <span>Process photos</span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <p class="process-status" id="process-status" role="status" aria-live="polite"></p>
+        </aside>
+      </section>
+
+      <section class="results-section" id="results-section" hidden>
+        <div class="results-heading">
+          <div>
+            <span class="step-number">03</span>
+            <h2>Your finished photos</h2>
+          </div>
+          <span class="results-count" id="results-count"></span>
+        </div>
+        <div class="results-grid" id="results-grid"></div>
+      </section>
+
+      <footer>
+        <span>PIXELBATCH</span>
+        <span>Made for the photos you love.</span>
+      </footer>
+    </main>
+  </body>
+</html>
