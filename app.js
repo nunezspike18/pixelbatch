@@ -11,11 +11,18 @@ const processStatus = document.querySelector("#process-status");
 const resultsSection = document.querySelector("#results-section");
 const resultsGrid = document.querySelector("#results-grid");
 const resultsCount = document.querySelector("#results-count");
+const previewDialog = document.querySelector("#preview-dialog");
+const previewClose = document.querySelector("#preview-close");
+const previewImage = document.querySelector("#preview-image");
+const previewStatus = document.querySelector("#preview-status");
 
 let photos = [];
 let results = [];
 let nextPhotoId = 0;
 let isProcessing = false;
+let isPreviewing = false;
+let previewUrl = "";
+let previewRequestId = 0;
 
 photoInput.addEventListener("change", (event) => {
   addPhotos(event.target.files);
@@ -52,6 +59,18 @@ clearButton.addEventListener("click", () => {
 });
 
 processButton.addEventListener("click", processPhotos);
+previewClose.addEventListener("click", () => previewDialog.close());
+previewDialog.addEventListener("close", () => {
+  previewRequestId += 1;
+  if (previewUrl) {
+    URL.revokeObjectURL(previewUrl);
+    previewUrl = "";
+  }
+  previewImage.removeAttribute("src");
+  previewImage.hidden = true;
+  isPreviewing = false;
+  renderPhotos();
+});
 
 function addPhotos(fileList) {
   if (isProcessing) {
@@ -94,6 +113,16 @@ function renderPhotos() {
       thumbnail.src = photo.url;
       thumbnail.alt = "";
 
+      const previewButton = document.createElement("button");
+      previewButton.className = "photo-preview-button";
+      previewButton.type = "button";
+      previewButton.disabled = isProcessing || isPreviewing;
+      previewButton.setAttribute("aria-label", `Preview ${photo.file.name} with current settings`);
+      const previewLabel = document.createElement("span");
+      previewLabel.textContent = "Click to preview";
+      previewButton.append(thumbnail, previewLabel);
+      previewButton.addEventListener("click", () => previewPhoto(photo));
+
       const info = document.createElement("div");
       info.className = "photo-info";
 
@@ -108,13 +137,13 @@ function renderPhotos() {
       const removeButton = document.createElement("button");
       removeButton.className = "remove-photo";
       removeButton.type = "button";
-      removeButton.disabled = isProcessing;
+      removeButton.disabled = isProcessing || isPreviewing;
       removeButton.setAttribute("aria-label", `Remove ${photo.file.name}`);
       removeButton.textContent = "×";
       removeButton.addEventListener("click", () => removePhoto(photo.id));
 
       info.append(name, meta);
-      row.append(thumbnail, info, removeButton);
+      row.append(previewButton, info, removeButton);
       photoList.append(row);
     }
   }
@@ -122,9 +151,54 @@ function renderPhotos() {
   fileCount.textContent = photos.length === 0
     ? "No photos yet"
     : `${photos.length} photo${photos.length === 1 ? "" : "s"} selected`;
-  clearButton.disabled = photos.length === 0 || isProcessing;
-  processButton.disabled = photos.length === 0 || isProcessing;
-  photoInput.disabled = isProcessing;
+  clearButton.disabled = photos.length === 0 || isProcessing || isPreviewing;
+  processButton.disabled = photos.length === 0 || isProcessing || isPreviewing;
+  photoInput.disabled = isProcessing || isPreviewing;
+}
+
+async function previewPhoto(photo) {
+  if (isProcessing || isPreviewing) {
+    return;
+  }
+
+  const dimensions = getDimensions();
+  if (dimensions === undefined) {
+    setStatus("Enter valid width and height values between 1 and 12,000 pixels.");
+    return;
+  }
+
+  isPreviewing = true;
+  const requestId = ++previewRequestId;
+  previewStatus.textContent = `Preparing preview for ${photo.file.name}…`;
+  previewImage.hidden = true;
+  previewDialog.showModal();
+  renderPhotos();
+
+  const watermark = document.querySelector("#watermark-text").value.trim();
+  const position = document.querySelector("#watermark-position").value;
+  try {
+    const preview = await processPhoto(photo, dimensions, watermark, position);
+    if (!previewDialog.open || requestId !== previewRequestId) {
+      URL.revokeObjectURL(preview.url);
+      return;
+    }
+
+    previewUrl = preview.url;
+    previewImage.src = preview.url;
+    previewImage.alt = `Preview of ${photo.file.name} with current settings`;
+    previewImage.hidden = false;
+    previewStatus.textContent = `${photo.file.name} · ${preview.width} × ${preview.height}${watermark ? ` · Watermark: ${watermark} (${position.replace("-", " ")})` : " · No watermark"}`;
+  } catch (error) {
+    console.error("Could not create the photo preview.", error);
+    previewStatus.textContent = "This photo could not be previewed. Try using a JPG, PNG, or WebP image.";
+  } finally {
+    if (requestId === previewRequestId) {
+      isPreviewing = false;
+      if (!previewDialog.open) {
+        renderPhotos();
+      }
+    }
+  }
 }
 
 function removePhoto(id) {

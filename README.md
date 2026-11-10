@@ -1,6 +1,6 @@
 # PixelBatch
 
-A browser-based batch photo resizer and text watermark tool. Choose multiple images, set a maximum output size, optionally add a text watermark, and download the processed photos. Photos are scaled to fit the selected bounds, including enlarging smaller images; choose “Keep original size” to prevent resizing.
+A browser-based batch photo resizer and text watermark tool. Choose multiple images, set a maximum output size, optionally add a text watermark, and download the processed photos. Click a photo in the queue to preview its resized version and watermark placement before processing the batch. Photos are scaled to fit the selected bounds, including enlarging smaller images; choose “Keep original size” to prevent resizing.
 
 ## Run locally
 
